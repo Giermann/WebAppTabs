@@ -34,7 +34,7 @@ nsMsgContentPolicy.prototype = {
       // the load
       let win = null;
       if (aLoadInfo.externalContentPolicyType == Ci.nsIContentPolicy.TYPE_DOCUMENT)
-        win = aContext.contentWindow;
+        win = aLoadInfo.loadingContext.contentWindow;
       else if (aLoadInfo.externalContentPolicyType == Ci.nsIContentPolicy.TYPE_SUBDOCUMENT)
         win = aLoadInfo.loadingContext.ownerDocument.defaultView.top;
 
