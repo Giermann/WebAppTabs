@@ -231,7 +231,7 @@ const webtabs = {
 
     // Don't handle events that: a) aren't trusted, b) have already been
     // handled or c) aren't left-click.
-    if (!aEvent.isTrusted || aEvent.getPreventDefault() || aEvent.button)
+    if (!aEvent.isTrusted || aEvent.defaultPrevented || aEvent.button)
       return;
 
     // If this is a click in a webapp then ignore it, onBeforeLinkTraversal and
