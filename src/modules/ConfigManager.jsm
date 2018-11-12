@@ -85,7 +85,7 @@ const ConfigManager = {
     if (!schemeMatches() || !hostMatches())
       return false;
 
-    return aURL.pathQueryRef.substring(0, descURL.pathQueryRef.length) == descURL.path;
+    return aURL.pathQueryRef.substring(0, descURL.pathQueryRef.length) == descURL.pathQueryRef;
   },
 
   getWebAppForURL: function(aURL) {
