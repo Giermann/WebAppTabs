@@ -20,6 +20,9 @@ function nsMsgContentPolicy() {
 
 nsMsgContentPolicy.prototype = {
   shouldLoad: function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra) {
+    // If this isn't a load from a node/window then allow it to continue
+    if (!aRequestOrigin)
+      return Ci.nsIContentPolicy.ACCEPT;
     let result = this.msgContentPolicy.shouldLoad(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra);
     // Always allow loads that the default policy allows
     if (result == Ci.nsIContentPolicy.ACCEPT)
