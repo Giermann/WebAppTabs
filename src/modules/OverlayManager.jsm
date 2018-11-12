@@ -4,6 +4,7 @@
 
 const EXPORTED_SYMBOLS = ["OverlayManager"];
 
+Components.utils.importGlobalProperties(["XMLHttpRequest"]); 
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://webapptabs/modules/LogManager.jsm");
 LogManager.createLogger(this, "OverlayManager");
@@ -153,8 +154,9 @@ const OverlayManagerInternal = {
 
     this.windowEntryMap.delete(aWindowEntry.window);
 
-    for (let [,sandbox] in Iterator(aWindowEntry.scripts)) {
+    for (let sandboxIdx in aWindowEntry.scripts) {
       try {
+        let sandbox = aWindowEntry.scripts[sandboxIdx];
         if ("OverlayListener" in sandbox && "unload" in sandbox.OverlayListener)
           sandbox.OverlayListener.unload();
       }
@@ -204,8 +206,7 @@ const OverlayManagerInternal = {
     LOG("Loading document overlay " + aDocumentURL);
 
     // TODO make this async
-    let xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].
-              createInstance(Ci.nsIXMLHttpRequest);
+    let xhr = new XMLHttpRequest();
     xhr.open("GET", aDocumentURL, false);
     xhr.send();
 
@@ -215,7 +216,7 @@ const OverlayManagerInternal = {
 
     let targetDoc = aWindowEntry.window.document;
 
-    function walkDocumentNodes(aDocument) {
+    function* walkDocumentNodes(aDocument) {
       let node = aDocument.documentElement;
 
       while (node) {
@@ -239,7 +240,7 @@ const OverlayManagerInternal = {
       }
     }
 
-    function elementChildren(aElement) {
+    function* elementChildren(aElement) {
       let node = aElement.firstChild;
       while (node) {
         let currentNode = node;
@@ -324,7 +325,7 @@ const OverlayManagerInternal = {
     try {
       // First check over the new overlays, merge them into the master list
       // and if any are for already tracked windows apply them
-      for (let [windowURL, newOverlays] in Iterator(aOverlayList)) {
+      for (let windowURL in aOverlayList) {
         let newOverlays = aOverlayList[windowURL];
 
         if (!(windowURL in this.overlays))
