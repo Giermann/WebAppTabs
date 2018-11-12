@@ -17,9 +17,9 @@ function nsContentPolicy() {
 }
 
 nsContentPolicy.prototype = {
-  shouldLoad: function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra) {
+  shouldLoad: function(aContentLocation, aLoadInfo, aMimeTypeGuess) {
     // We only care about full document loads
-    if (aContentType != Ci.nsIContentPolicy.TYPE_DOCUMENT)
+    if (aLoadInfo.externalContentPolicyType != Ci.nsIContentPolicy.TYPE_DOCUMENT)
       return Ci.nsIContentPolicy.ACCEPT;
 
     // Allow all non-web protocols to load
@@ -28,25 +28,26 @@ nsContentPolicy.prototype = {
       return Ci.nsIContentPolicy.ACCEPT;
 
     // If this isn't a load from a node/window then allow it to continue
-    if (!aRequestOrigin)
+    if (!aLoadInfo.loadingPrincipal)
       return Ci.nsIContentPolicy.ACCEPT;
 
     function logResult(aResult, aReason) {
-      LOG("Load of " + aContentLocation.spec + " by " + aRequestOrigin.spec +
+      LOG("Load of " + aContentLocation.spec + " by " + aLoadInfo.loadingPrincipal.URI.spec +
           ": " + aResult + " - " + aReason);
     }
 
-    let originDesc = ConfigManager.getWebAppForURL(aRequestOrigin);
+    let originDesc = ConfigManager.getWebAppForURL(aLoadInfo.loadingPrincipal.URI);
     let desc = ConfigManager.getWebAppForURL(aContentLocation);
 
-    if (aContext instanceof Ci.nsIDOMNode && aContext.localName == "browser" &&
-        aContext.className == "webapptab-browser") {
+    if (aLoadInfo.loadingContext instanceof Ci.nsIDOMNode &&
+        aLoadInfo.loadingContext.localName == "browser" &&
+        aLoadInfo.loadingContext.className == "webapptab-browser") {
       // This is definitely from a webapp and we must load it somewhere
-      aContext.parentNode.removeChild(aContext);
+      aLoadInfo.loadingContext.parentNode.removeChild(aLoadInfo.loadingContext);
 
       // If this is for a webapp then load it in a tab
       if (desc) {
-        let messengerWin = aContext.ownerDocument.defaultView;
+        let messengerWin = aLoadInfo.loadingContext.ownerDocument.defaultView;
         let webtab = OverlayManager.getScriptContext(messengerWin, "chrome://webapptabs/content/webtab.js");
         webtab.webtabs.openWebApp(desc, aContentLocation.spec);
 
@@ -77,14 +78,14 @@ nsContentPolicy.prototype = {
 
     // Otherwise load it externally
     Cc["@mozilla.org/uriloader/external-protocol-service;1"].
-    getService(Components.interfaces.nsIExternalProtocolService).
+    getService(Ci.nsIExternalProtocolService).
     loadUrl(aContentLocation);
 
     logResult("REJECT", "Loaded externally");
     return Ci.nsIContentPolicy.REJECT_SERVER;
   },
 
-  shouldProcess: function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeType, aExtra) {
+  shouldProcess: function(aContentLocation, aLoadInfo, aMimeType) {
     return Ci.nsIContentPolicy.ACCEPT;
   },
 
