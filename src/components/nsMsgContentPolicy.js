@@ -19,8 +19,8 @@ function nsMsgContentPolicy() {
 }
 
 nsMsgContentPolicy.prototype = {
-  shouldLoad: function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra) {
-    let result = this.msgContentPolicy.shouldLoad(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra);
+  shouldLoad: function(aContentLocation, aLoadInfo, aMimeTypeGuess) {
+    let result = this.msgContentPolicy.shouldLoad(aContentLocation, aLoadInfo, aMimeTypeGuess);
     // Always allow loads that the default policy allows
     if (result == Ci.nsIContentPolicy.ACCEPT)
       return result;
@@ -33,10 +33,10 @@ nsMsgContentPolicy.prototype = {
       // For javascript protocol loads attempt to find the top-level window for
       // the load
       let win = null;
-      if (aContentType == Ci.nsIContentPolicy.TYPE_DOCUMENT)
+      if (aLoadInfo.externalContentPolicyType == Ci.nsIContentPolicy.TYPE_DOCUMENT)
         win = aContext.contentWindow;
-      else if (aContentType == Ci.nsIContentPolicy.TYPE_SUBDOCUMENT)
-        win = aContext.ownerDocument.defaultView.top;
+      else if (aLoadInfo.externalContentPolicyType == Ci.nsIContentPolicy.TYPE_SUBDOCUMENT)
+        win = aLoadInfo.loadingContext.ownerDocument.defaultView.top;
 
       if (win) {
         let uri = win.document.documentURIObject;
@@ -48,7 +48,7 @@ nsMsgContentPolicy.prototype = {
         }
       }
 
-      LOG("Ignoring javascript protocol load for " + aRequestOrigin.spec);
+      LOG("Ignoring javascript protocol load for " + (aLoadInfo.loadingPrincipal ? aLoadInfo.loadingPrincipal.URI.spec : aContentLocation.spec));
     }
     catch (e) {
       ERROR("Failed checking javascript protocol load", e);
@@ -57,8 +57,8 @@ nsMsgContentPolicy.prototype = {
     return result;
   },
 
-  shouldProcess: function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeType, aExtra) {
-    return this.msgContentPolicy.shouldProcess(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeType, aExtra);
+  shouldProcess: function(aContentLocation, aLoadInfo, aMimeType) {
+    return this.msgContentPolicy.shouldProcess(aContentLocation, aLoadInfo, aMimeType);
   },
 
   classID: Components.ID("{6d9bc3f8-16fb-413b-a925-2197d8b24ae8}"),
