@@ -171,6 +171,7 @@ const webtabs = {
   },
 
   onPopupShowing: function(aEvent) {
+   try {
     let info = document.getElementById('tabmail').currentTabInfo;
     if (!info || !("browser" in info)) {
       if (this.backButton) this.backButton.hidden = true;
@@ -228,9 +229,11 @@ const webtabs = {
     }
 
     initSpellchecking(editingSession.getEditorForWindow(win));
+   } catch (e) { ERROR("onPopupShowing failed: ", e); }
   },
 
   onContentClick: function(aEvent) {
+   try {
     let info = document.getElementById('tabmail').currentTabInfo;
     if (!info)
       return;
@@ -263,22 +266,27 @@ const webtabs = {
     aEvent.preventDefault();
     aEvent.stopPropagation();
     this.openWebApp(newDesc, href);
+   } catch (e) { ERROR("onContentClick failed: ", e); }
   },
 
   onBackClick: function(aEvent) {
+   try {
     let info = document.getElementById('tabmail').currentTabInfo;
     if (!info || !("browser" in info))
       return;
 
     info.browser.goBack();
+   } catch (e) { ERROR("onBackClick failed: ", e); }
   },
 
   onForwardClick: function(aEvent) {
+   try {
     let info = document.getElementById('tabmail').currentTabInfo;
     if (!info || !("browser" in info))
       return;
 
     info.browser.goForward();
+   } catch (e) { ERROR("onForwardClick failed: ", e); }
   },
 
   // nsIXULBrowserWindow bits
@@ -386,7 +394,7 @@ const webtabs = {
       }
     }
     catch (e) {
-      ERROR("Exception during " + aEvent.type + " event", e);
+      ERROR("Exception during " + (aEvent ? aEvent.type : "(null)") + " event", e);
     }
   },
 
@@ -451,6 +459,7 @@ const webtabs = {
 
             let button = document.getElementById(webapp.id);
             if (button) button.setAttribute("image", webapp.icon);
+            else LOG("button not found for: " + webapp.id);
           }
         },
 
