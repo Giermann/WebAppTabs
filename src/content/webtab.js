@@ -35,14 +35,14 @@ const webtabs = {
     ConfigManager.addChangeListener(this.configChanged);
 
     let container = document.getElementById("tabpanelcontainer");
-    container.addEventListener("click", this, true);
+    if (container) container.addEventListener("click", this, true);
 
     document.getElementById("mailContext").addEventListener("popupshowing", this, false);
 
     this.backButton = document.getElementById("webapptabs-context-back")
-    this.backButton.addEventListener("command", this.onBackClick.bind(this), false);
+    if (this.backButton) this.backButton.addEventListener("command", this.onBackClick.bind(this), false);
     this.forwardButton = document.getElementById("webapptabs-context-forward")
-    this.forwardButton.addEventListener("command", this.onForwardClick.bind(this), false);
+    if (this.forwardButton) this.forwardButton.addEventListener("command", this.onForwardClick.bind(this), false);
 
     this.oldOnBeforeLinkTraversal = MsgStatusFeedback.onBeforeLinkTraversal;
     MsgStatusFeedback.onBeforeLinkTraversal = this.onBeforeLinkTraversal.bind(this);
@@ -51,7 +51,6 @@ const webtabs = {
     window.browserDOMWindow = this;
 
     // Initialise all tabs that are webapps
-    let tabmail = document.getElementById("tabmail");
     tabmail.tabInfo.forEach(this.onTabOpened.bind(this));
 
     tabmail.registerTabMonitor(this);
@@ -77,7 +76,7 @@ const webtabs = {
     document.getElementById("mailContext").removeEventListener("popupshowing", this, false);
 
     let container = document.getElementById("tabpanelcontainer");
-    container.removeEventListener("click", this, true);
+    if (container) container.removeEventListener("click", this, true);
 
     ConfigManager.removeChangeListener(this.configChanged);
 
@@ -100,7 +99,7 @@ const webtabs = {
   },
 
   updateWebAppButtons: function() {
-    while (this.buttonContainer.lastChild)
+    while (this.buttonContainer && this.buttonContainer.lastChild)
       this.buttonContainer.removeChild(this.buttonContainer.lastChild);
 
     ConfigManager.webappList.forEach(function(aDesc) {
@@ -109,6 +108,8 @@ const webtabs = {
   },
 
   createWebAppButton: function(aDesc, aBefore) {
+    if (!this.buttonContainer) return;
+
     let button = document.createElement("toolbarbutton");
     button.setAttribute("id", aDesc.id);
     button.setAttribute("class", "webtab");
@@ -171,15 +172,19 @@ const webtabs = {
   onPopupShowing: function(aEvent) {
     let info = document.getElementById('tabmail').currentTabInfo;
     if (!info || !("browser" in info)) {
-      this.backButton.hidden = true;
-      this.forwardButton.hidden = true;
+      if (this.backButton) this.backButton.hidden = true;
+      if (this.forwardButton) this.forwardButton.hidden = true;
       return;
     }
 
-    this.backButton.hidden = false;
-    this.forwardButton.hidden = false;
-    this.backButton.disabled = !info.browser.webNavigation.canGoBack;
-    this.forwardButton.disabled = !info.browser.webNavigation.canGoForward;
+    if (this.backButton) {
+      this.backButton.hidden = false;
+      this.backButton.disabled = !info.browser.webNavigation.canGoBack;
+    }
+    if (this.forwardButton) {
+      this.forwardButton.hidden = false;
+      this.forwardButton.disabled = !info.browser.webNavigation.canGoForward;
+    }
 
     // If the context menu already detected the area as editable then bail out
     if (gContextMenu.onEditableArea)
@@ -444,7 +449,7 @@ const webtabs = {
             ConfigManager.persistPrefs();
 
             let button = document.getElementById(webapp.id);
-            button.setAttribute("image", webapp.icon);
+            if (button) button.setAttribute("image", webapp.icon);
           }
         },
 
