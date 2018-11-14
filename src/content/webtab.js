@@ -51,6 +51,7 @@ const webtabs = {
     window.browserDOMWindow = this;
 
     // Initialise all tabs that are webapps
+    let tabmail = document.getElementById("tabmail");
     tabmail.tabInfo.forEach(this.onTabOpened.bind(this));
 
     tabmail.registerTabMonitor(this);
